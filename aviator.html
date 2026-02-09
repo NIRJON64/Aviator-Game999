@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aviator Demo Game</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #1a1a1a; color: white; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .container { background: #2b2b2b; padding: 20px; border-radius: 10px; box-shadow: 0 0 15px rgba(0,0,0,0.5); width: 350px; text-align: center; }
+        input { width: 90%; padding: 10px; margin: 10px 0; border-radius: 5px; border: none; }
+        button { width: 100%; padding: 10px; background: #e91e63; border: none; color: white; font-weight: bold; cursor: pointer; border-radius: 5px; }
+        #game-section { display: none; }
+        .balance-box { background: #444; padding: 10px; margin-bottom: 20px; border-radius: 5px; color: #4caf50; font-size: 20px; }
+        .multiplier { font-size: 48px; color: #ffeb3b; margin: 20px 0; }
+        .plane { font-size: 50px; transition: transform 0.1s; }
+    </style>
+</head>
+<body>
+
+    <div id="auth-section" class="container">
+        <h2>একাউন্ট রেজিস্ট্রেশন</h2>
+        <input type="text" id="username" placeholder="ইউজার নেম" required>
+        <input type="password" id="password" placeholder="পাসওয়ার্ড" required>
+        <button onclick="register()">সাইন আপ করুন</button>
+    </div>
+
+    <div id="game-section" class="container">
+        <h2>Aviator গেম</h2>
+        <div class="balance-box">ব্যালেন্স: <span id="balance">0</span> ৳</div>
+        <div id="status">বিমানটি উড়ছে...</div>
+        <div class="multiplier" id="display-mult">1.00x</div>
+        <div class="plane" id="plane-icon">✈️</div>
+        <br>
+        <button id="bet-btn" onclick="cashOut()">CASH OUT</button>
+    </div>
+
+    <script>
+        let balance = 0;
+        let multiplier = 1.0;
+        let gameInterval;
+        let isFlying = false;
+
+        function register() {
+            const user = document.getElementById('username').value;
+            if (user === "") { alert("নাম দিন!"); return; }
+
+            // অটো ২০০০০০ টাকা অ্যাড করা
+            balance = 200000;
+            localStorage.setItem('aviator_balance', balance);
+            
+            document.getElementById('auth-section').style.display = 'none';
+            document.getElementById('game-section').style.display = 'block';
+            updateUI();
+            startGame();
+        }
+
+        function updateUI() {
+            document.getElementById('balance').innerText = balance.toLocaleString();
+        }
+
+        function startGame() {
+            isFlying = true;
+            multiplier = 1.0;
+            let crashPoint = (Math.random() * 5 + 1).toFixed(2); // ১ থেকে ৫ এর মধ্যে র‍্যান্ডম ক্র্যাশ
+
+            gameInterval = setInterval(() => {
+                if (multiplier >= crashPoint) {
+                    clearInterval(gameInterval);
+                    isFlying = false;
+                    document.getElementById('status').innerText = "💥 বিমান উড়ে গেছে!";
+                    document.getElementById('status').style.color = "red";
+                    setTimeout(startGame, 3000); // ৩ সেকেন্ড পর আবার শুরু
+                } else {
+                    multiplier += 0.01;
+                    document.getElementById('display-mult').innerText = multiplier.toFixed(2) + "x";
+                    document.getElementById('status').innerText = "বিমানটি উড়ছে...";
+                    document.getElementById('status').style.color = "#4caf50";
+                }
+            }, 100);
+        }
+
+        function cashOut() {
+            if (isFlying) {
+                let winAmount = 1000 * multiplier; // ডেমো হিসেবে ১০০০ টাকা বেট ধরলে
+                balance += winAmount;
+                localStorage.setItem('aviator_balance', balance);
+                updateUI();
+                alert(multiplier.toFixed(2) + "x এ ক্যাশ আউট করেছেন! লাভ: " + winAmount.toFixed(2) + "৳");
+            }
+        }
+    </script>
+</body>
+</html>
